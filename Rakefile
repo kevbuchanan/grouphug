@@ -1,16 +1,18 @@
 require 'rake'
 require 'rspec/core/rake_task'
-require_relative 'db/config'
 
+require_relative 'config/application'
 
 desc "create the database"
 task "db:create" do
-  touch 'db/ar-grouphug.sqlite3'
+  puts "Creating file #{DB_PATH} if it doesn't exist..."
+  touch DB_PATH
 end
 
 desc "drop the database"
 task "db:drop" do
-  rm_f 'db/ar-grouphug.sqlite3'
+  puts "Deleting #{DB_PATH}..."
+  rm_f DB_PATH
 end
 
 desc "migrate the database (options: VERSION=x, VERBOSE=false, SCOPE=blog)."
@@ -23,8 +25,8 @@ task "db:migrate" do
 end
 
 desc "populate the test database with sample data"
-task "db:populate" do
-  StudentsImporter.import
+task "db:seed" do
+  require APP_ROOT.join('db', 'seeds.rb')
 end
 
 desc 'Retrieves the current schema version number'
@@ -32,7 +34,12 @@ task "db:version" do
   puts "Current version: #{ActiveRecord::Migrator.current_version}"
 end
 
+desc 'Start IRB with application environment loaded'
+task "console" do
+  exec "irb -r./config/application"
+end
+
 desc "Run the specs"
-RSpec::Core::RakeTask.new(:specs)
+RSpec::Core::RakeTask.new(:spec)
 
 task :default  => :specs
